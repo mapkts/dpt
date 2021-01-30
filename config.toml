@@ -1,0 +1,72 @@
+[jde]
+password = "TANX-1996"
+username = "tanxl"
+
+address = "http://192.168.0.232:8003/jde/E1Menu.maf"
+
+[range]
+# 九毛九门店
+range_jmj = ["1000000-1999999"]
+# 九毛九广深门店
+range_jmj_local = ["1000000-1799999"]
+# 两颗鸡蛋门店
+range_lkd = ["7000000-7999999", "97020015"]
+# 两颗鸡蛋广深门店
+range_lkd_local = ["7000000-7999999", "97020015"]
+# 那未大叔门店
+range_nws = ["32000000-32999999"]
+# 那未大叔广深门店
+range_nws_local = ["32000000-32999999"]
+# 外区仓库 （自有仓、代仓）
+range_outer_warehouse = ["11951-11955", "12051-12055", "12398", "12598", "14098", "14198", "14298", "15598", "16798", "17198", "17119"]
+# 怂门店
+range_son = ["33000000-33999999"]
+# 怂广深门店
+range_son_local = ["33000000-33999999"]
+# 太二门店
+range_tey = ["2000000-2999999"]
+# 太二广深门店
+range_tey_local = ["2020000-2020999", "2600000-2799999"]
+
+[st]
+field_at = "总|金额"
+field_dt = "请求|日期"
+field_mid = "第二项目|号"
+field_mname = "说明 1|"
+field_qt = "数量|"
+field_sid = "售至|"
+field_sname = "售至地址|名"
+field_wid = "分部/场所|"
+
+[locator]
+close_btn = "#hc_Close"
+data_select_btn = "#C0_23"
+download_btn = "#hc1"
+export_data_btn = "#jdehtmlExportData"
+fav_btn = "#drop_fav_menus"
+grid_down_btn = "#GOTOLAST0_1"
+login_btn = ".buttonstylenormal.margin-top5"
+main_frame = 8
+ok_btn = "#hc_OK"
+password_field = "#Password"
+query_btn = "#hc_Find"
+query_list_selector = "#AQFormQueryList"
+report_btn = "#drop_reportmenu"
+select_btn = "#hc_Select"
+submit_btn = "#hc0"
+username_field = "#User"
+
+st_company_field = "input[name='qbe0_1.9']"
+st_expected_date_field = "input[name='qbe0_1.11']"
+st_order_type_field = "#C0_13"
+st_repo_field = "input[name='qbe0_1.10']"
+
+ios_century_field = "input[name='qbe0_1.4']"
+ios_company_field = "input[name='qbe0_1.0']"
+ios_company_from_field = "#PO6T0"
+ios_company_to_field = "#PO7T0"
+ios_month_field = "input[name='qbe0_1.6']"
+ios_month_from_field = "#PO8T0"
+ios_month_to_field = "#PO9T0"
+ios_repo_field = "input[name='qbe0_1.2']"
+ios_year_field = "input[name='qbe0_1.5']"
