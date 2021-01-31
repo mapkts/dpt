@@ -158,14 +158,14 @@ pub fn aggregate<P: AsRef<Path>>(
     let mut mmap = MMap::default();
     let smap = SMap::default();
     let bmap = BMap::default();
-    let mut jmj_req_set: FxHashSet<u32> = FxHashSet::default();
-    let mut tey_req_set: FxHashSet<u32> = FxHashSet::default();
-    let mut lkd_req_set: FxHashSet<u32> = FxHashSet::default();
-    let mut son_req_set: FxHashSet<u32> = FxHashSet::default();
-    let mut nws_req_set: FxHashSet<u32> = FxHashSet::default();
-    let mut oth_req_set: FxHashSet<u32> = FxHashSet::default();
-    let mut os_req_set: FxHashSet<u32> = FxHashSet::default();
-    let mut dc_req_set: FxHashSet<u32> = FxHashSet::default();
+    let mut jmj_req_set: FxHashSet<(u32, u32)> = FxHashSet::default();
+    let mut tey_req_set: FxHashSet<(u32, u32)> = FxHashSet::default();
+    let mut lkd_req_set: FxHashSet<(u32, u32)> = FxHashSet::default();
+    let mut son_req_set: FxHashSet<(u32, u32)> = FxHashSet::default();
+    let mut nws_req_set: FxHashSet<(u32, u32)> = FxHashSet::default();
+    let mut oth_req_set: FxHashSet<(u32, u32)> = FxHashSet::default();
+    let mut os_req_set: FxHashSet<(u32, u32)> = FxHashSet::default();
+    let mut dc_req_set: FxHashSet<(u32, u32)> = FxHashSet::default();
     let mut daily_req_qt: FxHashMap<(u32, NaiveDate), f64> = FxHashMap::default();
 
     // Open the given file for reading.
@@ -243,7 +243,7 @@ pub fn aggregate<P: AsRef<Path>>(
                         match get_store_type(record.sid, &ranges) {
                             $(($type, $loc) => {
                                 // update `store`
-                                if record.qt > 0.0 && $set.insert(record.sid) {
+                                if record.qt > 0.0 && $set.insert((record.mid, record.sid)) {
                                     (*entry).store.$field += 1;
                                 }
                                 // update `quantity`
