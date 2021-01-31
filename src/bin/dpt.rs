@@ -87,6 +87,7 @@ fn main() {
         EncodeType::GB18030,
         &CONFIG.clone(),
         &mut rdr,
+        false,
     ) {
         Ok(maps) => mmap = maps.0,
         Err(e) => {

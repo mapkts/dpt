@@ -153,6 +153,7 @@ pub fn aggregate<P: AsRef<Path>>(
     encoding: EncodeType,
     config: &Value,
     reader: &mut CsvReader,
+    strict: bool,
 ) -> Result<(MMap, SMap, BMap)> {
     let mut mmap = MMap::default();
     let smap = SMap::default();
@@ -184,7 +185,6 @@ pub fn aggregate<P: AsRef<Path>>(
     let mut line_number = 1;
     // Analyse records
     loop {
-        // Must clear buffer first.
         buf.clear();
         match rdr.read_until(b'\n', &mut buf) {
             Err(e) => return Err(Error::new(ErrorKind::Io(e))),
@@ -199,10 +199,14 @@ pub fn aggregate<P: AsRef<Path>>(
                 let record = match parse_record(&line, header, reader) {
                     Ok(option_record) => option_record,
                     Err(e) => {
-                        return Err(Error::new(ErrorKind::MalformedData(
-                            e.to_string(),
-                            line_number,
-                        )));
+                        if !strict {
+                            continue;
+                        } else {
+                            return Err(Error::new(ErrorKind::MalformedData(
+                                e.to_string(),
+                                line_number,
+                            )));
+                        }
                     }
                 };
                 let record = if record.is_none() {
