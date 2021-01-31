@@ -1,6 +1,6 @@
 //! Performs preset statistical aggregations for ST records.
 use super::parse::*;
-use crate::convert::{decode, Encoding};
+use crate::convert::{decode, EncodeType};
 use crate::CsvReader;
 use crate::{Error, ErrorKind, Result};
 
@@ -150,13 +150,13 @@ pub type BMap = FxHashMap<u32, Brand>;
 /// Aggregates ST records from a single file.
 pub fn aggregate<P: AsRef<Path>>(
     path: P,
-    encoding: Encoding,
+    encoding: EncodeType,
     config: &Value,
     reader: &mut CsvReader,
 ) -> Result<(MMap, SMap, BMap)> {
     let mut mmap = MMap::default();
-    let mut smap = SMap::default();
-    let mut bmap = BMap::default();
+    let smap = SMap::default();
+    let bmap = BMap::default();
     let mut jmj_req_set: FxHashSet<u32> = FxHashSet::default();
     let mut tey_req_set: FxHashSet<u32> = FxHashSet::default();
     let mut lkd_req_set: FxHashSet<u32> = FxHashSet::default();
@@ -181,11 +181,11 @@ pub fn aggregate<P: AsRef<Path>>(
     decode(&buf, encoding, &mut line);
     let header = parse_header(&line, config, reader)?;
 
+    let mut line_number = 1;
     // Analyse records
     loop {
         // Must clear buffer first.
         buf.clear();
-        line.clear();
         match rdr.read_until(b'\n', &mut buf) {
             Err(e) => return Err(Error::new(ErrorKind::Io(e))),
             Ok(0) => {
@@ -195,10 +195,16 @@ pub fn aggregate<P: AsRef<Path>>(
             }
             Ok(_) => {
                 decode(&buf, encoding, &mut line);
-                let record = parse_record(&line, header, reader)?;
-                if parse_record(&line, header, reader).is_err() {
-                    println!("{:?}", line);
-                }
+                line_number += 1;
+                let record = match parse_record(&line, header, reader) {
+                    Ok(option_record) => option_record,
+                    Err(e) => {
+                        return Err(Error::new(ErrorKind::MalformedData(
+                            e.to_string(),
+                            line_number,
+                        )));
+                    }
+                };
                 let record = if record.is_none() {
                     // All records have been aggregated when reaching here.
                     // Just return the final result.
@@ -274,9 +280,6 @@ pub fn aggregate<P: AsRef<Path>>(
                     Dc, Outer, dc_req_set, outer_dc
                     Oth, Unknown, oth_req_set, other
                 );
-
-                // TODO: remove this.
-                // println!("{:#?}", mmap);
             }
         }
     }
@@ -285,28 +288,30 @@ pub fn aggregate<P: AsRef<Path>>(
 pub fn get_store_type(sid: u32, ranges: &StoreRange) -> (StoreType, StoreLoc) {
     // TODO: `StoreRange` should implement Iterator trait.
     macro_rules! check_store_type {
-        ($range:ident, $type:ident, $loc:ident) => {
-            if ranges
+        ($($range:ident, $type:ident, $loc:ident)*) => {
+            $(if ranges
                 .$range
                 .clone()
                 .into_iter()
                 .any(|r| r.contains(&(sid as usize)))
             {
                 return (StoreType::$type, StoreLoc::$loc);
-            }
+            })*
         };
     }
-    check_store_type! {jmj_local, Jmj, Local};
-    check_store_type! {tey_local, Tey, Local};
-    check_store_type! {lkd_local, Lkd, Local};
-    check_store_type! {son_local, Son, Local};
-    check_store_type! {nws_local, Nws, Local};
-    check_store_type! {jmj, Jmj, Outer};
-    check_store_type! {tey, Tey, Outer};
-    check_store_type! {lkd, Lkd, Outer};
-    check_store_type! {son, Son, Outer};
-    check_store_type! {nws, Nws, Outer};
-    check_store_type! {dc_outer, Dc, Outer};
+    check_store_type! {
+        jmj_local, Jmj, Local
+        tey_local, Tey, Local
+        lkd_local, Lkd, Local
+        son_local, Son, Local
+        nws_local, Nws, Local
+        jmj, Jmj, Outer
+        tey, Tey, Outer
+        lkd, Lkd, Outer
+        son, Son, Outer
+        nws, Nws, Outer
+        dc_outer, Dc, Outer
+    };
 
     (StoreType::Oth, StoreLoc::Unknown)
 }

@@ -44,7 +44,7 @@ pub enum ErrorKind {
     /// Occurs when parsing string to another type failed.
     FromStr(String, &'static str),
     /// Occurs when encountering malformed data.
-    MalformedData(String),
+    MalformedData(String, usize),
 }
 
 impl fmt::Display for Error {
@@ -59,8 +59,8 @@ impl fmt::Display for Error {
             ErrorKind::FromStr(ref src, ref ty) => {
                 write!(f, "parse error: failed to parse `{}` as `{}`", src, ty)
             }
-            ErrorKind::MalformedData(ref s) => {
-                write!(f, "malformed data: string `{}` is malformed", s)
+            ErrorKind::MalformedData(ref msg, ref num) => {
+                write!(f, "{} (line: {})", msg, num)
             }
         }
     }
