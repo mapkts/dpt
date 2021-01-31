@@ -1,3 +1,4 @@
+use crate::{Error, ErrorKind, Result};
 use encoding::all::{GB18030, GBK, UTF_8};
 use encoding::{DecoderTrap, Encoding};
 
@@ -10,11 +11,17 @@ pub enum EncodeType {
 }
 
 /// Decodes a sequence of bytes encoded with GBK, GB18030 or UTF-8.
-pub fn decode(src: &[u8], encoding: EncodeType, dst: &mut String) {
+pub fn decode(src: &[u8], encoding: EncodeType, dst: &mut String) -> Result<()> {
     dst.clear();
     match encoding {
-        EncodeType::GB18030 => GB18030.decode_to(src, DecoderTrap::Replace, dst).unwrap(),
-        EncodeType::GBK => GBK.decode_to(src, DecoderTrap::Replace, dst).unwrap(),
-        EncodeType::UTF8 => UTF_8.decode_to(src, DecoderTrap::Replace, dst).unwrap(),
-    };
+        EncodeType::GB18030 => GB18030
+            .decode_to(src, DecoderTrap::Strict, dst)
+            .map_err(|e| Error::new(ErrorKind::Decode(e.to_owned().to_string()))),
+        EncodeType::GBK => GBK
+            .decode_to(src, DecoderTrap::Strict, dst)
+            .map_err(|e| Error::new(ErrorKind::Decode(e.to_owned().to_string()))),
+        EncodeType::UTF8 => UTF_8
+            .decode_to(src, DecoderTrap::Strict, dst)
+            .map_err(|e| Error::new(ErrorKind::Decode(e.to_owned().to_string()))),
+    }
 }

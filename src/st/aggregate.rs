@@ -178,7 +178,7 @@ pub fn aggregate<P: AsRef<Path>>(
 
     // Read header row and parse it into a `Header`.
     rdr.read_until(b'\n', &mut buf)?;
-    decode(&buf, encoding, &mut line);
+    decode(&buf, encoding, &mut line)?;
     let header = parse_header(&line, config, reader)?;
 
     let mut line_number = 1;
@@ -194,7 +194,7 @@ pub fn aggregate<P: AsRef<Path>>(
                 return Ok((mmap, smap, bmap));
             }
             Ok(_) => {
-                decode(&buf, encoding, &mut line);
+                decode(&buf, encoding, &mut line)?;
                 line_number += 1;
                 let record = match parse_record(&line, header, reader) {
                     Ok(option_record) => option_record,

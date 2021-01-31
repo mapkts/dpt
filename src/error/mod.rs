@@ -38,7 +38,7 @@ pub enum ErrorKind {
     /// Can occur when walking directory entries.
     WalkDir(walkdir::Error),
     /// Can occur when decoding Chinese character sets (GBK, GB18030)
-    Decode(&'static str),
+    Decode(String),
     /// Occurs if `config.toml` is invalid or incomplete.
     Config(String),
     /// Occurs when parsing string to another type failed.
