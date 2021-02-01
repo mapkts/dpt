@@ -166,7 +166,7 @@ pub fn aggregate<P: AsRef<Path>>(
     let mut oth_req_set: FxHashSet<(u32, u32)> = FxHashSet::default();
     let mut os_req_set: FxHashSet<(u32, u32)> = FxHashSet::default();
     let mut dc_req_set: FxHashSet<(u32, u32)> = FxHashSet::default();
-    let mut daily_req_qt: FxHashMap<(u32, NaiveDate), f64> = FxHashMap::default();
+    let mut daily_req_qt: FxHashMap<u32, FxHashMap<NaiveDate, f64>> = FxHashMap::default();
 
     // Open the given file for reading.
     let file = File::open(path)?;
@@ -190,8 +190,8 @@ pub fn aggregate<P: AsRef<Path>>(
             Err(e) => return Err(Error::new(ErrorKind::Io(e))),
             Ok(0) => {
                 // All contents have been read when reaching here.
-                // Just return the final result.
-                return Ok((mmap, smap, bmap));
+                // Just break here.
+                break;
             }
             Ok(_) => {
                 decode(&buf, encoding, &mut line)?;
@@ -211,8 +211,8 @@ pub fn aggregate<P: AsRef<Path>>(
                 };
                 let record = if record.is_none() {
                     // All records have been aggregated when reaching here.
-                    // Just return the final result.
-                    return Ok((mmap, smap, bmap));
+                    // Break this loop.
+                    break;
                 } else {
                     record.unwrap()
                 };
@@ -238,7 +238,7 @@ pub fn aggregate<P: AsRef<Path>>(
 
                 use StoreLoc::*;
                 use StoreType::*;
-                macro_rules! update_material_op1 {
+                macro_rules! update_material_s1 {
                     ($($type:ident, $loc:ident, $set:ident, $field:ident)*) => {
                         match get_store_type(record.sid, &ranges) {
                             $(($type, $loc) => {
@@ -249,8 +249,9 @@ pub fn aggregate<P: AsRef<Path>>(
                                 // update `quantity`
                                 (*entry).quantity.$field += record.qt;
                                 {
-                                    let entry = daily_req_qt.entry((record.mid, record.dt.unwrap())).or_insert(0.0);
-                                    *entry += record.qt;
+                                    let entry = daily_req_qt.entry(record.mid).or_default();
+                                    let entry_inner = entry.entry(record.dt.unwrap()).or_default();
+                                    *entry_inner += record.qt;
                                 }
                                 // update `amount`
                                 (*entry).amount.$field += record.at;
@@ -270,7 +271,7 @@ pub fn aggregate<P: AsRef<Path>>(
                         }
                     }
                 }
-                update_material_op1!(
+                update_material_s1!(
                     Jmj, Local, jmj_req_set, local_jmj
                     Tey, Local, tey_req_set, local_tey
                     Lkd, Local, lkd_req_set, local_lkd
@@ -287,6 +288,62 @@ pub fn aggregate<P: AsRef<Path>>(
             }
         }
     }
+
+    // Calculate date-related stats for `mmap` entries.
+    //
+    // This is stage 2 of the `mmap` generating process.
+    for (mid, map) in daily_req_qt {
+        // SAFETY: `unwrap` here is safe because when current `(mid, map)` pair is present in
+        // `daily_req_qt`, there must be at least one entry in `map`, thus it's safe to unwrap
+        // here.
+        let (&dt, &qt) = map.iter().next().unwrap();
+        let mut min_qt = qt;
+        let mut max_qt = qt;
+        let mut min_dt = dt;
+        let mut max_dt = dt;
+        let mut min_gap = 0;
+        let mut max_gap = 0;
+
+        let mut gap_prev = 0;
+        map.iter()
+            .zip(map.iter().skip(1))
+            .for_each(|((&d1, &_q1), (&d2, &q2))| {
+                if q2 == min_qt {
+                    // Do nothing
+                } else if q2 > min_qt {
+                    max_qt = q2;
+                    max_dt = d2;
+                } else {
+                    min_qt = q2;
+                    min_dt = d2;
+                }
+
+                let gap = (d2 - d1).num_days().abs();
+                let diff = (gap - gap_prev).abs();
+                if gap_prev == 0 {
+                    max_gap = gap;
+                    min_gap = gap;
+                } else if diff > 0 {
+                    max_gap = gap;
+                } else if diff < 0 {
+                    min_gap = gap;
+                }
+                gap_prev = gap;
+            });
+
+        // Update related fields
+        mmap.entry(mid).and_modify(|e| {
+            (*e).min_req_interval = min_gap as u16;
+            (*e).max_req_interval = max_gap as u16;
+            (*e).min_req_quantity = min_qt;
+            (*e).max_req_quantity = max_qt;
+            (*e).min_req_date = Some(min_dt);
+            (*e).max_req_date = Some(max_dt);
+        });
+    }
+
+    // Returns three maps.
+    Ok((mmap, smap, bmap))
 }
 
 pub fn get_store_type(sid: u32, ranges: &StoreRange) -> (StoreType, StoreLoc) {
