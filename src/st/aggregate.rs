@@ -14,7 +14,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct FltStore {
+pub struct FSlots {
     pub local_jmj: f64,
     pub local_tey: f64,
     pub local_lkd: f64,
@@ -26,7 +26,7 @@ pub struct FltStore {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct IntStore {
+pub struct ISlots {
     pub local_jmj: u32,
     pub local_tey: u32,
     pub local_lkd: u32,
@@ -90,10 +90,10 @@ pub struct Material {
     pub mid: u32,
     pub wid: u16,
     pub mname: String,
-    pub store: IntStore,
-    pub req_times: IntStore,
-    pub quantity: FltStore,
-    pub amount: FltStore,
+    pub store: ISlots,
+    pub req_times: ISlots,
+    pub quantity: FSlots,
+    pub amount: FSlots,
     pub first_req_date: Option<NaiveDate>,
     pub last_req_date: Option<NaiveDate>,
     pub max_req_interval: u16,
@@ -143,7 +143,7 @@ impl Brand {
     }
 }
 
-/// A type alias for `FxHashMap<u32, Material`.
+/// A type alias for `FxhashMap<u32, Material>`.
 pub type MMap = FxHashMap<u32, Material>;
 /// A type alias for `FxHashMap<u32, Store>`.
 pub type SMap = FxHashMap<u32, Store>;
