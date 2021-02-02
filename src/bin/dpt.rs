@@ -76,12 +76,11 @@ fn main() {
 
     use dpt::convert::*;
     use dpt::st::aggregate::*;
-    use dpt::st::writer::write_mmap;
+    use dpt::st::writer::*;
     use dpt::CsvReader;
 
     let mut rdr = CsvReader::new();
 
-    let mmap;
     match aggregate(
         "./202012ST.csv",
         EncodeType::GB18030,
@@ -89,11 +88,9 @@ fn main() {
         &mut rdr,
         false,
     ) {
-        Ok(maps) => mmap = maps.0,
+        Ok(maps) => write_aggregation_result(maps, ".").unwrap(),
         Err(e) => {
             error!(e);
         }
     }
-
-    let _ = write_mmap(mmap, ".");
 }

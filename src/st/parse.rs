@@ -1,4 +1,4 @@
-//! Parsing functions, such as [`parse_header`] and [`parse_record`].
+//! Parsing functions, mainly [`parse_header`] and [`parse_record`].
 use crate::CsvReader;
 use crate::{Error, ErrorKind, Result};
 use std::ops::RangeInclusive;
