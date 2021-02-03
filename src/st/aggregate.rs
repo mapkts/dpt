@@ -392,7 +392,7 @@ pub fn aggregate<P: AsRef<Path>>(
                                     11795 => (*bmap_entry).req_amount_11795 += record.at,
                                     _ => (*bmap_entry).req_amount_other += record.at,
                                 }
-                                if !brand_set.insert((record.mid, brand_type)) {
+                                if brand_set.insert((record.mid, brand_type)) {
                                     (*bmap_entry).sku_in_use += 1;
                                     match record.wid {
                                         11751 => (*bmap_entry).sku_in_use_11751 += 1,
@@ -489,8 +489,8 @@ pub fn aggregate<P: AsRef<Path>>(
         let mut vec = map.into_iter().collect::<Vec<_>>();
         vec.sort_unstable_by(|a, b| a.0.cmp(&b.0));
 
-        // SAFETY: `unwrap`s here is safe because when current `(sid, set)` pair is present in
-        // `store_map`, there must be at least one entry in `set`.
+        // SAFETY: `unwrap`s here is safe because when current `(sid, map)` pair is present in
+        // `store_map`, there must be at least one entry in `map`.
         let &(dt, at) = vec.first().unwrap();
         let last_dt = vec.last().unwrap().0;
         let mut min_at = at;
@@ -543,14 +543,14 @@ pub fn aggregate<P: AsRef<Path>>(
 pub fn get_store_type(sid: u32, ranges: &StoreRange) -> (StoreType, StoreLoc) {
     // TODO: `StoreRange` should implement Iterator trait.
     macro_rules! check_store_type {
-        ($($range:ident, $type:ident, $loc:ident)*) => {
+        ($($range:ident, $ty:ident, $loc:ident)*) => {
             $(if ranges
                 .$range
                 .clone()
                 .into_iter()
                 .any(|r| r.contains(&(sid as usize)))
             {
-                return (StoreType::$type, StoreLoc::$loc);
+                return (StoreType::$ty, StoreLoc::$loc);
             })*
         };
     }
