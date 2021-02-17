@@ -5,6 +5,8 @@
 //! - [`st`]: Performs preset statistical aggregations for ST records.
 //! - [`jde`]: In charges of connecting JDE and downloading data from JDE automatically.
 //! - [`convert`]: Converts .xlsx to .csv and performs character encoding and decoding.
+#![feature(seek_stream_len)]
+
 mod error;
 mod logger;
 mod reader;

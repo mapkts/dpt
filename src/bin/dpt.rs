@@ -48,7 +48,7 @@ lazy_static! {
 
     // User configurations.
     pub static ref CONFIG: Value = {
-        // FIXME: change inner string to "config.toml"
+        // FIXME: change inner string to "config.toml" when it's time to ship production.
         let contents = fs::read(DIR.join("../../config.toml"));
 
         match contents {
@@ -69,28 +69,49 @@ lazy_static! {
 
 fn main() {
     let yaml = load_yaml!("../../cli.yml");
-    let _matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).get_matches();
 
-    info!("info");
-    warn!("warn");
+    // run subcommand `st`.
+    if let Some(sub_m) = matches.subcommand_matches("st") {
+        if sub_m.is_present("input") {}
+    }
 
-    use dpt::convert::*;
-    use dpt::st::aggregate::*;
-    use dpt::st::writer::*;
-    use dpt::CsvReader;
+    // use dpt::convert::*;
+    // use dpt::st::aggregate::*;
+    // use dpt::st::writer::*;
+    // use dpt::CsvReader;
 
-    let mut rdr = CsvReader::new();
+    // let mut rdr = CsvReader::new();
 
-    match aggregate(
-        "./202012ST.csv",
-        EncodeType::GB18030,
-        &CONFIG.clone(),
-        &mut rdr,
-        false,
-    ) {
-        Ok(maps) => write_aggregation_result(maps, ".").unwrap(),
-        Err(e) => {
-            error!(e);
+    // match aggregate(
+    //     "./202012ST.csv",
+    //     EncodeType::GB18030,
+    //     &CONFIG.clone(),
+    //     &mut rdr,
+    //     false,
+    // ) {
+    //     Ok(maps) => write_aggregation_result(maps, "./").unwrap(),
+    //     Err(e) => {
+    //         error!(e);
+    //     }
+    // }
+
+    use dpt::iter::*;
+
+    let mut buf = Vec::new();
+    let mut reader = LineReader::new(vec!["1.test.txt", "2.test.txt", "3.test.txt"], true).unwrap();
+    loop {
+        buf.clear();
+        match reader.next_line(&mut buf) {
+            Ok(0) => {
+                break;
+            }
+            Ok(_) => {
+                println!("{:?}", std::str::from_utf8(&buf).unwrap());
+            }
+            Err(e) => {
+                warn!(e);
+            }
         }
     }
 }

@@ -45,6 +45,8 @@ pub enum ErrorKind {
     FromStr(String, &'static str),
     /// Occurs when encountering malformed data.
     MalformedData(String, usize),
+    /// Occurs when accessing file failed.
+    Access(String),
 }
 
 impl fmt::Display for Error {
@@ -61,6 +63,9 @@ impl fmt::Display for Error {
             }
             ErrorKind::MalformedData(ref msg, ref num) => {
                 write!(f, "{} (line: {})", msg, num)
+            }
+            ErrorKind::Access(ref path) => {
+                write!(f, "access error: failed to access `{}`", path)
             }
         }
     }

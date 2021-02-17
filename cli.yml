@@ -17,7 +17,7 @@ subcommands:
                 default_value: ./concat.csv
                 help: specify the name and location of the output file
         after_help:
-            1. Concatenates a directory of files, only preserving one header line and exlcuding 
+            1. Concatenates a directory of files, only preserving one header line and exlcuding
             last line in each input file.
 
 
@@ -48,11 +48,11 @@ subcommands:
               You must supply files to be converted either by specifying option -i or option -d.
 
 
-              If output directory (option -o) is not specified, the converted files will be placed 
+              If output directory (option -o) is not specified, the converted files will be placed
               at the current working directory.
 
 
-              Common use cases of this sub-command is to convert .xlsx files to .csv, or change 
+              Common use cases of this sub-command is to convert .xlsx files to .csv, or change
               file encoding from GBK, GB18030 to UTF-8 as this program generally only accepts files
               typed .csv and encoded with UTF-8.
 
@@ -67,31 +67,40 @@ subcommands:
 
 
               dpt convert  -t=encoding  -d data/  -o converted/
-    - concat:
+    - st:
         about: Performs preset statistic aggregations for ST records
         args:
             - input:
                 short: i
                 takes_value: true
-                required: true
-                help: specify a list of files to be aggregated 
+                help: specify a list of files to be aggregated
+            - encoding:
+                short: e
+                takes_value: true
+                possible_values: GB18030, GBK, UTF8
+                default_value: GB18030
+                help: disambiguate the encoding of the passed-in files.
+            - directory:
+                short: d
+                takes_value: true
+                help: specify a directory of files to be aggregated
             - output:
                 short: o
                 takes_value: true
-                help: specify a directory to place the resulted files 
+                help: specify a directory to place the resulted files
         after_help:
               Please note that this sub-command doesn't differentiate ST records of
               different data `range. It will span the whole time range of all given
               files when running.
 
 
-              1. Performs statistic aggregations for a given file.
+              1. Performs preset statistic aggregations for a given file.
 
 
-              dpt st  -i ./data.csv  -o ./st
+              dpt st  -i ./data.csv  -o ./st/
 
 
-              2. Performs statistic aggregations for a list of files, this is equivalent
+              2. Performs preset statistic aggregations for a list of files, this is equivalent
               to concatenate the given files into a single file and perform this command
               over the concatenated file.
 

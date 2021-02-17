@@ -18,8 +18,9 @@ pub fn write_aggregation_result(maps: (MMap, SMap, BMap), out_dir: &str) -> Resu
 pub fn write_mmap(mmap: MMap, out_dir: &str) -> Result<()> {
     // Set up open options.
     let mut file = OpenOptions::new()
-        .create(true)
         .write(true)
+        .create(true)
+        .truncate(true)
         .open(format!("{}/sku.csv", out_dir))?;
 
     // Write UTF-8 BOM.
@@ -134,8 +135,9 @@ pub fn write_mmap(mmap: MMap, out_dir: &str) -> Result<()> {
 pub fn write_smap(smap: SMap, out_dir: &str) -> Result<()> {
     // Set up open options.
     let mut file = OpenOptions::new()
-        .create(true)
         .write(true)
+        .create(true)
+        .truncate(true)
         .open(format!("{}/store.csv", out_dir))?;
 
     // Write UTF-8 BOM.
@@ -192,8 +194,9 @@ pub fn write_smap(smap: SMap, out_dir: &str) -> Result<()> {
 pub fn write_bmap(bmap: BMap, out_dir: &str) -> Result<()> {
     // Set up open options.
     let mut file = OpenOptions::new()
-        .create(true)
         .write(true)
+        .create(true)
+        .truncate(true)
         .open(format!("{}/brand.csv", out_dir))?;
 
     // Write UTF-8 BOM.
@@ -225,7 +228,10 @@ pub fn write_bmap(bmap: BMap, out_dir: &str) -> Result<()> {
     file.write_all(format!("{}\r\n", header).as_bytes())?;
 
     // Write records.
-    for v in bmap.values() {
+    // Transform `bmap` into a sorted vector.
+    let mut vec = bmap.into_iter().map(|x| x.1).collect::<Vec<_>>();
+    vec.sort_unstable_by(|a, b| a.brand.cmp(&b.brand));
+    for v in vec {
         let record = format!(
             "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\r\n",
             v.brand.to_string(),
