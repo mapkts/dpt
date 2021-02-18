@@ -1,4 +1,6 @@
 /target
+/data
+/st
 Cargo.lock
 config.toml
 *.txt

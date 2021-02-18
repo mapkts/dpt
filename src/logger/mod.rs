@@ -38,7 +38,7 @@ impl Logger {
     fn write_log(&mut self, ty: &str, msg: &str) {
         if self.write_log {
             let time = Local::now().format("%Y-%m-%d %H:%M:%S");
-            let msg = format!("[{} {:<5} npt] {}\n", time, ty.to_uppercase(), msg);
+            let msg = format!("[{} {:<5} dpt] {}\n", time, ty.to_uppercase(), msg);
 
             self.log_file.as_mut().map(|f| {
                 if f.write(msg.as_bytes()).is_err() {

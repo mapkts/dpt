@@ -37,15 +37,21 @@ pub enum ErrorKind {
     Io(io::Error),
     /// Can occur when walking directory entries.
     WalkDir(walkdir::Error),
-    /// Can occur when decoding Chinese character sets (GBK, GB18030)
+    /// Occurs when concatenating files failed.
+    Concat(fcc::Error),
+    /// Can occur when executing some browser action.
+    CmdError(fantoccini::error::CmdError),
+    /// Cannot establish a session for a new browser client.
+    NewSessionError(fantoccini::error::NewSessionError),
+    /// Failed to decode Chinese character sets (GBK, GB18030)
     Decode(String),
-    /// Occurs if `config.toml` is invalid or incomplete.
+    /// `config.toml` is invalid or incomplete.
     Config(String),
-    /// Occurs when parsing string to another type failed.
+    /// Parsing string to another type failed.
     FromStr(String, &'static str),
-    /// Occurs when encountering malformed data.
+    /// Encountering malformed data.
     MalformedData(String, usize),
-    /// Occurs when accessing file failed.
+    /// The given file refused to access or is not found.
     Access(String),
 }
 
@@ -54,6 +60,8 @@ impl fmt::Display for Error {
         match *self.0 {
             ErrorKind::Io(ref err) => err.fmt(f),
             ErrorKind::WalkDir(ref err) => err.fmt(f),
+            ErrorKind::CmdError(ref err) => err.fmt(f),
+            ErrorKind::NewSessionError(ref err) => err.fmt(f),
             ErrorKind::Decode(ref err) => write!(f, "decode error: failed to decode `{}`", err),
             ErrorKind::Config(ref err) => {
                 write!(f, "config error: `{}` is invalid or not found", err)
@@ -67,6 +75,7 @@ impl fmt::Display for Error {
             ErrorKind::Access(ref path) => {
                 write!(f, "access error: failed to access `{}`", path)
             }
+            ErrorKind::Concat(ref err) => err.fmt(f),
         }
     }
 }
@@ -91,3 +100,6 @@ macro_rules! impl_from_error {
 
 impl_from_error!(io::Error, Io);
 impl_from_error!(walkdir::Error, WalkDir);
+impl_from_error!(fcc::Error, Concat);
+impl_from_error!(fantoccini::error::CmdError, CmdError);
+impl_from_error!(fantoccini::error::NewSessionError, NewSessionError);

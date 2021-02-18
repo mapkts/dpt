@@ -3,8 +3,8 @@
 //! The main entries of this library are several core modules, including:
 //!
 //! - [`st`]: Performs preset statistical aggregations for ST records.
-//! - [`jde`]: In charges of connecting JDE and downloading data from JDE automatically.
-//! - [`convert`]: Converts .xlsx to .csv and performs character encoding and decoding.
+//! - [`jde`]: Automatically connects JDE and downloads data from JDE.
+//! - [`convert`]: Converts .xlsx to .csv and performs character set encoding and decoding.
 #![feature(seek_stream_len)]
 
 mod error;

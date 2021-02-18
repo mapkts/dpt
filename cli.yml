@@ -38,7 +38,9 @@ subcommands:
                 short: t
                 takes_value: true
                 default_value: filetype
-                possible_values: filetype, encoding
+                possible_values:
+                    - filetype
+                    - encoding
                 help: supply a list of files as input
             - output:
                 short: o
@@ -73,13 +75,17 @@ subcommands:
             - input:
                 short: i
                 takes_value: true
+                multiple: true
                 help: specify a list of files to be aggregated
             - encoding:
                 short: e
                 takes_value: true
-                possible_values: GB18030, GBK, UTF8
+                possible_values:
+                    - GB18030
+                    - GBK
+                    - UTF8
                 default_value: GB18030
-                help: disambiguate the encoding of the passed-in files.
+                help: specify the encoding of the passed-in files.
             - directory:
                 short: d
                 takes_value: true
@@ -88,9 +94,12 @@ subcommands:
                 short: o
                 takes_value: true
                 help: specify a directory to place the resulted files
+            - strict:
+                short: s
+                help: Switches to strict aggregation
         after_help:
               Please note that this sub-command doesn't differentiate ST records of
-              different data `range. It will span the whole time range of all given
+              different data range. It will span the whole time range of all given
               files when running.
 
 
@@ -106,3 +115,12 @@ subcommands:
 
 
               dpt st  -i data.part1.csv data.part2.csv data.part3.csv  -o ./st/
+    - jde:
+        about: Browser automation for JDE client (currently unstable)
+        alias: dl
+        args:
+            - port:
+                short: p
+                takes_value: true
+                default_value: "9999"
+                help: specify the listening port

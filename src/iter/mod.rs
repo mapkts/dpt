@@ -3,7 +3,7 @@ use crate::{Error, ErrorKind, Result};
 use walkdir::WalkDir;
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read, Seek, SeekFrom};
+use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
 /// File path entries.
