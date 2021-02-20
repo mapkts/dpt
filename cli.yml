@@ -3,8 +3,74 @@ version: "0.1.0"
 author: Aaron Taner <mapkts@gmail.com>
 about: Data Processing Toolkit for Material Department
 subcommands:
+    - jde:
+        about: Automatically downloads data from JDE (currently unstable)
+        alias: dl
+        index: 1
+        args:
+            - port:
+                short: p
+                takes_value: true
+                default_value: "9999"
+                help: specify the listening port
+    - st:
+        about: Performs preset statistic aggregations for ST records
+        index: 2
+        args:
+            - input:
+                short: i
+                takes_value: true
+                multiple: true
+                help: specify a list of files to be aggregated
+            - encoding:
+                short: e
+                takes_value: true
+                possible_values:
+                    - GB18030
+                    - GBK
+                    - UTF8
+                default_value: GB18030
+                help: specify the encoding of the passed-in files.
+            - directory:
+                short: d
+                takes_value: true
+                help: specify a directory of files to be aggregated
+            - output:
+                short: o
+                takes_value: true
+                help: specify a directory to place the resulted files
+            - strict:
+                short: s
+                help: Switches to strict aggregation
+        after_help:
+              Please note that this sub-command doesn't differentiate ST records of
+              different data range. It will span the whole time range of all given
+              files when running.
+
+
+              1. Performs preset statistic aggregations for a given file.
+
+
+              dpt st  -i ./data.csv  -o ./st/
+
+
+              2. Performs preset statistic aggregations for a list of files, this is equivalent
+              to concatenate the given files into a single one and perform this command
+              over it.
+
+
+              dpt st  -i data.part1.csv data.part2.csv data.part3.csv  -o ./st/
+
+
+              3. Performs preset statistic aggregations for a directory of files, this is equivalent
+              to concatenate the given files into a single one and perform this command
+              over it.
+
+
+              dpt st  -d ./data/  -o ./st/
     - concat:
         about: Concatenates a directory of files
+        index: 3
         args:
             - dir:
                 short: d
@@ -24,6 +90,7 @@ subcommands:
             dpt concat  -nH  -e=1  -d ./data  -o ./concat.csv
     - convert:
         about: Converts between filetypes or changes file encodings
+        index: 4
         args:
             - dir:
                 short: d
@@ -69,58 +136,3 @@ subcommands:
 
 
               dpt convert  -t=encoding  -d data/  -o converted/
-    - st:
-        about: Performs preset statistic aggregations for ST records
-        args:
-            - input:
-                short: i
-                takes_value: true
-                multiple: true
-                help: specify a list of files to be aggregated
-            - encoding:
-                short: e
-                takes_value: true
-                possible_values:
-                    - GB18030
-                    - GBK
-                    - UTF8
-                default_value: GB18030
-                help: specify the encoding of the passed-in files.
-            - directory:
-                short: d
-                takes_value: true
-                help: specify a directory of files to be aggregated
-            - output:
-                short: o
-                takes_value: true
-                help: specify a directory to place the resulted files
-            - strict:
-                short: s
-                help: Switches to strict aggregation
-        after_help:
-              Please note that this sub-command doesn't differentiate ST records of
-              different data range. It will span the whole time range of all given
-              files when running.
-
-
-              1. Performs preset statistic aggregations for a given file.
-
-
-              dpt st  -i ./data.csv  -o ./st/
-
-
-              2. Performs preset statistic aggregations for a list of files, this is equivalent
-              to concatenate the given files into a single file and perform this command
-              over the concatenated file.
-
-
-              dpt st  -i data.part1.csv data.part2.csv data.part3.csv  -o ./st/
-    - jde:
-        about: Browser automation for JDE client (currently unstable)
-        alias: dl
-        args:
-            - port:
-                short: p
-                takes_value: true
-                default_value: "9999"
-                help: specify the listening port

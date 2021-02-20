@@ -33,9 +33,11 @@ pub async fn calculate_ios_report(
         .await?
         .wait_click(&locators.select_btn)
         .await?
+        .delay_ms(1000)
+        .await
         .wait_click(&locators.ok_btn)
         .await?
-        .delay_ms(1000)
+        .delay_ms(2000)
         .await;
 
     Ok(client.enter_parent_frame().await?)

@@ -2,7 +2,7 @@
 password = "TANX-1996"
 username = "tanxl"
 
-address = "http://192.168.0.232:8003/jde/E1Menu.maf"
+address = "http://192.168.0.173:8003/jde/E1Menu.maf"
 
 [range]
 # 九毛九门店
