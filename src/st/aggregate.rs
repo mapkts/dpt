@@ -5,13 +5,10 @@ use crate::CsvReader;
 use crate::{Error, ErrorKind, Result};
 
 use chrono::NaiveDate;
-use fcc::Concat;
 use fxhash::{FxHashMap, FxHashSet};
-use std::path::Path;
 use toml::Value;
 
 use std::fs::File;
-use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::io::BufReader;
 
@@ -237,8 +234,8 @@ pub type SMap = FxHashMap<u32, Store>;
 pub type BMap = FxHashMap<BrandType, Brand>;
 
 /// Aggregates ST records from a single file.
-pub fn aggregate<P: AsRef<Path>>(
-    paths: Vec<P>,
+pub fn aggregate(
+    file: File,
     encoding: EncodeType,
     config: &Value,
     reader: &mut CsvReader,
@@ -259,28 +256,6 @@ pub fn aggregate<P: AsRef<Path>>(
     let mut store_map: FxHashMap<u32, (FxHashSet<u32>, FxHashMap<NaiveDate, f64>)> =
         FxHashMap::default();
     let mut brand_set: FxHashSet<(u32, BrandType)> = FxHashSet::default();
-
-    // Open the given file for reading.
-    let mut should_cleanup = false;
-    let file = if paths.len() > 1 {
-        let mut file = OpenOptions::new()
-            .create(true)
-            .write(true)
-            .open("./_dpt_temp_.csv")?;
-        Concat::new()
-            .header(true)
-            .skip_end(2)
-            .open(paths)
-            .write(&mut file)?;
-        should_cleanup = true;
-        let file = File::open("./_dpt_temp_.csv")?;
-        file
-    } else if paths.len() == 1 {
-        let file = File::open(paths[0].as_ref())?;
-        file
-    } else {
-        unreachable!()
-    };
 
     let mut rdr = BufReader::new(file);
     let mut buf = Vec::new();
@@ -556,11 +531,6 @@ pub fn aggregate<P: AsRef<Path>>(
             (*e).first_req_date = Some(dt);
             (*e).last_req_date = Some(last_dt);
         });
-    }
-
-    // Remove temp file.
-    if should_cleanup {
-        std::fs::remove_file("./_dpt_temp_.csv")?
     }
 
     // Return three maps.

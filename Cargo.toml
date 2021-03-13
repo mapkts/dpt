@@ -2,11 +2,12 @@
 authors = ["mapkts <mapkts@gmail.com>"]
 edition = "2018"
 name = "dpt"
-version = "0.1.0"
+version = "0.2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+admerge = "0.1"
 calamine = "0.16"
 chrono = "0.4"
 clap = {version = "2.33", features = ["yaml"]}

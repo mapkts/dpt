@@ -6,20 +6,20 @@ subcommands:
     - jde:
         about: Automatically downloads data from JDE (currently unstable)
         alias: dl
-        index: 1
         args:
             - port:
                 short: p
                 takes_value: true
+                value_name: NUMBER
                 default_value: "9999"
                 help: specify the listening port
     - st:
         about: Performs preset statistic aggregations for ST records
-        index: 2
         args:
             - input:
                 short: i
                 takes_value: true
+                value_name: PATH
                 multiple: true
                 help: specify a list of files to be aggregated
             - encoding:
@@ -34,17 +34,19 @@ subcommands:
             - directory:
                 short: d
                 takes_value: true
+                value_name: PATH
                 help: specify a directory of files to be aggregated
             - output:
                 short: o
                 takes_value: true
+                value_name: PATH
                 help: specify a directory to place the resulted files
             - strict:
                 short: s
                 help: Switches to strict aggregation
         after_help:
               Please note that this sub-command doesn't differentiate ST records of
-              different data range. It will span the whole time range of all given
+              different data range.It will span the whole time range of all given
               files when running.
 
 
@@ -69,36 +71,83 @@ subcommands:
 
               dpt st  -d ./data/  -o ./st/
     - concat:
-        about: Concatenates a directory of files
-        index: 3
+        about: Concatenates a list or a directory of files
+        alias: cc
         args:
-            - dir:
-                short: d
+            - input:
+                short: i
+                long: input
                 takes_value: true
-                required: true
+                value_name: PATH
+                multiple: true
+                help: specify a list of files to be concatenated
+            - directory:
+                short: d
+                long: dir
+                takes_value: true
+                value_name: PATH
                 help: specify the directory in where input files are located
             - output:
                 short: o
+                long: output
                 takes_value: true
                 default_value: ./concat.csv
+                value_name: PATH
                 help: specify the name and location of the output file
+            - skip-start:
+                short: s
+                long: skip-start
+                takes_value: true
+                value_name: NUMBER
+                conflicts_with: headless
+                help: skip a given number of lines from the head of each source when concatenating
+            - skip-end:
+                short: e
+                long: skip-end
+                takes_value: true
+                value_name: NUMBER
+                help: skip a given number of lines from the tail of each source when concatenating
+            - headless:
+                short: H
+                long: headless
+                conflicts_with: headonce
+                help: equivalent to set --skip-start=1
+            - headonce:
+                short: O
+                long: headonce
+                conflicts_with: skip-start
+                help: simliar to --headless, but preserve the head line of the first source.
+            - newline:
+                short: n
+                long: newline
+                help: force the presence of an ending newline if any source is not ends with a newline.
         after_help:
-            1. Concatenates a directory of files, only preserving one header line and exlcuding
-            last line in each input file.
+            When concatenating files that contain records (such as ST records), it's up to the user to
+
+            ensure all given files are structurally equal. If not, the contents in the resulted file may
+
+            not be what you want.
 
 
-            dpt concat  -nH  -e=1  -d ./data  -o ./concat.csv
+            1. Concatenates a directory of files by skipping the tail line
+
+            of each source and preserving the head line of the first source.
+
+
+            dpt concat  -nO  -e=1  -d ./data  -o ./concat.csv
     - convert:
-        about: Converts between filetypes or changes file encodings
-        index: 4
+        about: Converts xlsx file to csv file
+        alias: cv
         args:
             - dir:
                 short: d
                 takes_value: true
+                value_name: PATH
                 help: supply a directory of files as input
             - file:
                 short: i
                 takes_value: true
+                value_name: PATH
                 multiple: true
                 help: supply a list of files as input
             - type:
@@ -112,6 +161,7 @@ subcommands:
             - output:
                 short: o
                 takes_value: true
+                required: true
                 help: specify a directory to store the converted files
         after_help:
               You must supply files to be converted either by specifying option -i or option -d.

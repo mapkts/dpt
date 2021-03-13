@@ -125,22 +125,3 @@ impl LineReader {
         }
     }
 }
-
-// fn ends_with_newline<R: Read + Seek>(f: &mut R) -> Result<bool> {
-//     // If the length of the given stream is zero, it can't end with a newline.
-//     if f.stream_len()? == 0 {
-//         return Ok(false);
-//     }
-
-//     let mut byte = [0; 1];
-//     let current_pos = f.stream_position()?;
-//     f.seek(SeekFrom::End(-1))?;
-//     f.read_exact(&mut byte)?;
-//     // reset the internal cursor to its original position.
-//     f.seek(SeekFrom::Start(current_pos))?;
-
-//     match byte {
-//         [b'\n'] => return Ok(true),
-//         _ => return Ok(false),
-//     }
-// }

@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::error;
 use std::fmt;
 use std::io;
@@ -14,7 +15,7 @@ pub struct Error(Box<ErrorKind>);
 
 impl Error {
     /// A crate private constructor for `Error`.
-    pub(crate) fn new(kind: ErrorKind) -> Error {
+    pub fn new(kind: ErrorKind) -> Error {
         Error(Box::new(kind))
     }
 
@@ -37,12 +38,12 @@ pub enum ErrorKind {
     Io(io::Error),
     /// Can occur when walking directory entries.
     WalkDir(walkdir::Error),
-    /// Occurs when concatenating files failed.
-    Concat(fcc::Error),
     /// Can occur when executing some browser action.
     CmdError(fantoccini::error::CmdError),
     /// Cannot establish a session for a new browser client.
     NewSessionError(fantoccini::error::NewSessionError),
+    /// Represents errors that originated from crate `admerge`.
+    Merge(admerge::ErrorKind),
     /// Failed to decode Chinese character sets (GBK, GB18030)
     Decode(String),
     /// `config.toml` is invalid or incomplete.
@@ -53,6 +54,8 @@ pub enum ErrorKind {
     MalformedData(String, usize),
     /// The given file refused to access or is not found.
     Access(String),
+    /// Other miscellaneous errors.
+    Other(Cow<'static, str>),
 }
 
 impl fmt::Display for Error {
@@ -75,7 +78,8 @@ impl fmt::Display for Error {
             ErrorKind::Access(ref path) => {
                 write!(f, "access error: failed to access `{}`", path)
             }
-            ErrorKind::Concat(ref err) => err.fmt(f),
+            ErrorKind::Merge(ref err) => err.fmt(f),
+            ErrorKind::Other(ref err) => err.fmt(f),
         }
     }
 }
@@ -100,6 +104,6 @@ macro_rules! impl_from_error {
 
 impl_from_error!(io::Error, Io);
 impl_from_error!(walkdir::Error, WalkDir);
-impl_from_error!(fcc::Error, Concat);
 impl_from_error!(fantoccini::error::CmdError, CmdError);
 impl_from_error!(fantoccini::error::NewSessionError, NewSessionError);
+impl_from_error!(admerge::ErrorKind, Merge);

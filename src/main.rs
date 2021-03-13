@@ -4,20 +4,22 @@ extern crate clap;
 #[macro_use]
 extern crate lazy_static;
 
-// Lib
+// lib
 use dpt::convert::EncodeType;
 use dpt::iter::FilePathEntries;
 use dpt::Logger;
-use dpt::Result;
+use dpt::{Error, ErrorKind, Result};
 
-// Third-party
+// third-party
+use admerge::{FileMerger, Newline, Skip};
 use clap::{App, ArgMatches};
 use toml::Value;
 
-// Std
+// std
+use std::borrow::Cow;
 use std::env;
 use std::ffi::OsString;
-use std::fs;
+use std::fs::{self, File, OpenOptions};
 use std::path::PathBuf;
 use std::process;
 use std::sync::Mutex;
@@ -28,7 +30,7 @@ macro_rules! error {
         LOGGER
             .lock()
             .unwrap()
-            .error("program exited due to previous error");
+            .error("process didn't exit successfully");
         process::exit(0);
     };
     ($format_str:literal, $($msg:tt)*) => {
@@ -36,7 +38,7 @@ macro_rules! error {
         LOGGER
             .lock()
             .unwrap()
-            .error("program exited due to previous error");
+            .error("process didn't exit successfully");
         process::exit(0);
     };
 }
@@ -66,12 +68,12 @@ lazy_static! {
     };
 
     // Global logger.
-    pub static ref LOGGER: Mutex<Logger> = Mutex::new(Logger::open(DIR.join("../../log.txt")));
+    pub static ref LOGGER: Mutex<Logger> = Mutex::new(Logger::open(DIR.join("log.txt")));
 
     // User configurations.
     pub static ref CONFIG: Value = {
         // FIXME: change inner string to "config.toml" when it's time to ship production.
-        let contents = fs::read(DIR.join("../../config.toml"));
+        let contents = fs::read(DIR.join("config.toml"));
 
         match contents {
             Err(_) => {
@@ -91,7 +93,7 @@ lazy_static! {
 
 #[tokio::main]
 async fn main() {
-    let yaml = load_yaml!("../../cli.yml");
+    let yaml = load_yaml!("../cli.yml");
     let matches = App::from_yaml(yaml).get_matches();
 
     if let Err(e) = run(&matches).await {
@@ -126,6 +128,28 @@ async fn run(matches: &ArgMatches<'_>) -> Result<()> {
             Default::default()
         };
 
+        let mut should_cleanup = false;
+        let file = if paths.len() > 1 {
+            let mut temp = OpenOptions::new()
+                .create(true)
+                .write(true)
+                .append(true)
+                .open("./_dpt_temp_.csv")?;
+            let mut merger = FileMerger::new();
+            merger.skip_head(Skip::LinesOnce(1));
+            merger.skip_tail(Skip::Lines(1));
+            merger.with_paths(paths, &mut temp)?;
+
+            let file = File::open("./_dpt_temp_.csv")?;
+            should_cleanup = true;
+            file
+        } else if paths.len() == 1 {
+            let file = File::open(&paths[0])?;
+            file
+        } else {
+            unreachable!()
+        };
+
         let encoding = if m.is_present("encoding") {
             match m.value_of("encoding").unwrap() {
                 "GB18030" => EncodeType::GB18030,
@@ -154,12 +178,18 @@ async fn run(matches: &ArgMatches<'_>) -> Result<()> {
             dir.into_os_string()
         };
 
-        let strict = if m.is_present("strict") { true } else { false };
+        let strict = m.is_present("strict");
 
         info!("start aggregating data");
 
         let mut rdr = CsvReader::new();
-        let maps = aggregate(paths, encoding, &CONFIG.clone(), &mut rdr, strict)?;
+        let maps = aggregate(file, encoding, &CONFIG.clone(), &mut rdr, strict)?;
+
+        // remove temp file
+        if should_cleanup {
+            fs::remove_file("./_dpt_temp_.csv")?;
+        }
+
         write_aggregation_result(maps, out_dir.to_str().unwrap())?;
 
         info!("aggregation process has finished");
@@ -290,6 +320,77 @@ async fn run(matches: &ArgMatches<'_>) -> Result<()> {
 
         loop {
             thread::sleep(Duration::from_secs(10));
+        }
+    }
+
+    // run subcommand `concat`.
+    if let Some(m) = matches.subcommand_matches("concat") {
+        let input: Vec<PathBuf> = if let Some(file_paths) = m.values_of("input") {
+            file_paths.map(|s| PathBuf::from(s)).collect()
+        } else if let Some(dir) = m.value_of("directory") {
+            FilePathEntries::from_dir(dir)?.into_iter().collect()
+        } else {
+            vec![]
+        };
+
+        let out_dir = m.value_of("output").unwrap();
+        let skip_start = if let Some(n) = m.value_of("skip-start") {
+            n.parse::<usize>().map_err(|_| {
+                Error::new(ErrorKind::Other(Cow::Owned(format!(
+                    "skip-start only accepts number, but found `{}`",
+                    n
+                ))))
+            })?
+        } else {
+            0
+        };
+        let skip_end = if let Some(n) = m.value_of("skip-end") {
+            n.parse::<usize>().map_err(|_| {
+                Error::new(ErrorKind::Other(Cow::Owned(format!(
+                    "skip-end only accepts number, but found `{}`",
+                    n
+                ))))
+            })?
+        } else {
+            0
+        };
+        let headless = m.is_present("headless");
+        let headonce = m.is_present("headonce");
+        let newline = m.is_present("newline");
+
+        let mut merger = FileMerger::new();
+        let mut writer = OpenOptions::new().write(true).create(true).open(out_dir)?;
+        if skip_start > 0 {
+            merger.skip_head(Skip::Lines(skip_start));
+        } else if headless {
+            merger.skip_head(Skip::Lines(1));
+        } else if headonce {
+            merger.skip_head(Skip::LinesOnce(1));
+        }
+        if skip_end > 0 {
+            merger.skip_tail(Skip::Lines(skip_end));
+        }
+        if newline {
+            merger.force_ending_newline(Newline::Crlf);
+        }
+        merger.with_paths(input, &mut writer)?;
+
+        info!("The given files have been successfully merged");
+        info!({
+            format!(
+                "result file can be found in path `{}`",
+                fs::canonicalize(out_dir)?.display()
+            )
+        });
+    }
+
+    // run subcommand `convert`.
+    if let Some(m) = matches.subcommand_matches("convert") {
+        use dpt::convert::*;
+
+        if let Some(path) = m.value_of("file") {
+            let out_dir = m.value_of("output").unwrap();
+            xlsx2csv(path, out_dir)?;
         }
     }
 
