@@ -22,7 +22,8 @@ use std::ffi::OsString;
 use std::fs::{self, File, OpenOptions};
 use std::path::PathBuf;
 use std::process;
-use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 
 macro_rules! error {
     ($msg:tt) => {
@@ -98,11 +99,6 @@ async fn main() {
 
     if let Err(e) = run(&matches).await {
         error!(e);
-    }
-
-    // let user manually exit this program when running command `jde`.
-    if matches.is_present("jde") {
-        loop {}
     }
 }
 
@@ -206,8 +202,6 @@ async fn run(matches: &ArgMatches<'_>) -> Result<()> {
         use dpt::jde::{self, *};
         use jde::jobs::*;
         use jde::time::*;
-        use std::thread;
-        use std::time::Duration;
 
         let jde = jde::parse_config_jde_table(&CONFIG.clone())?;
         let locators = jde::parse_config_locator_table(&CONFIG.clone())?;
@@ -316,11 +310,20 @@ async fn run(matches: &ArgMatches<'_>) -> Result<()> {
             c
         };
 
-        driver_handle.kill()?;
+        // let user manually exit this program when running command `jde`.
+        let running = Arc::new(AtomicBool::new(true));
+        let r = running.clone();
 
-        loop {
-            thread::sleep(Duration::from_secs(10));
-        }
+        ctrlc::set_handler(move || {
+            r.store(false, Ordering::SeqCst);
+        })
+        .expect("error setting ctrl-c handler");
+
+        info!("job done! use ctrl-c to exit process");
+        while running.load(Ordering::SeqCst) {}
+        info!("process exited successfully");
+
+        driver_handle.kill()?;
     }
 
     // run subcommand `concat`.
