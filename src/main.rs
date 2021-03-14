@@ -208,7 +208,7 @@ async fn run(matches: &ArgMatches<'_>) -> Result<()> {
         let driver_port = m.value_of("port").unwrap().parse::<u32>().unwrap();
 
         // Spawns a server thread that runs the webdriver.
-        let mut driver_handle = startup_driver(driver_port)?;
+        let _driver_handle = startup_driver(driver_port)?;
         info!("webdriver listens at port {}", driver_port);
 
         // Logins to JDE.
@@ -323,7 +323,7 @@ async fn run(matches: &ArgMatches<'_>) -> Result<()> {
         while running.load(Ordering::SeqCst) {}
         info!("process exited successfully");
 
-        driver_handle.kill()?;
+        // driver_handle.kill()?;
     }
 
     // run subcommand `concat`.
