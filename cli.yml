@@ -2,6 +2,7 @@ name: dpt
 version: "0.1.0"
 author: Aaron Taner <mapkts@gmail.com>
 about: Data Processing Toolkit for Material Department
+settings: [UnifiedHelpMessage]
 subcommands:
     - jde:
         about: Automatically downloads data from JDE (currently unstable)
@@ -25,6 +26,7 @@ subcommands:
             - encoding:
                 short: e
                 takes_value: true
+                value_name: ENCODING
                 possible_values:
                     - GB18030
                     - GBK
@@ -45,9 +47,8 @@ subcommands:
                 short: s
                 help: Switches to strict aggregation
         after_help:
-              Please note that this sub-command doesn't differentiate ST records of
-              different data range.It will span the whole time range of all given
-              files when running.
+              Please note that this subcommand will span over the full time range of
+              all given files when running.
 
 
               1. Performs preset statistic aggregations for a given file.
@@ -124,7 +125,7 @@ subcommands:
         after_help:
             When concatenating files that contain records (such as ST records), it's up to the user to
 
-            ensure all given files are structurally equal. If not, the contents in the resulted file may
+            ensure all given files are structurally equal; Otherwise, the contents in the resulted file may
 
             not be what you want.
 
