@@ -282,6 +282,13 @@ async fn run(matches: &ArgMatches<'_>) -> Result<()> {
             info!("finish downloading ST records");
 
             info!(
+                "start downloading ST records (request date: {}, repository: 11752)",
+                today
+            );
+            let c = download_st_records(c, &today, "11752", &locators).await?;
+            info!("finish downloading ST records");
+
+            info!(
                 "start downloading ST records (request date: {}, repository: 11751)",
                 today
             );

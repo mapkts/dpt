@@ -2,7 +2,7 @@ name: dpt
 version: "0.1.0"
 author: Aaron Taner <mapkts@gmail.com>
 about: Data Processing Toolkit for Material Department
-settings: [UnifiedHelpMessage]
+settings: [NextLineHelp]
 subcommands:
     - jde:
         about: Automatically downloads data from JDE (currently unstable)
