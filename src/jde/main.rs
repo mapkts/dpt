@@ -1,19 +1,20 @@
 #![allow(unused)]
 
 extern crate jde;
-use clap::{App, Arg, SubCommand};
-use env_logger::Env;
 use jde::consts::*;
 use jde::jobs::*;
 use jde::time::*;
 use jde::*;
-use log::{error, info, warn};
-use webdriver::error::ErrorStatus;
 
 use std::io::Write;
 use std::mem::ManuallyDrop;
 use std::thread;
 use std::time::Duration;
+
+use clap::{App, Arg, SubCommand};
+use env_logger::Env;
+use log::{error, info, warn};
+use webdriver::error::ErrorStatus;
 
 #[tokio::main]
 async fn main() -> Result<(), fantoccini::error::CmdError> {
@@ -144,17 +145,17 @@ async fn run() -> Result<(), fantoccini::error::CmdError> {
 
             // Downloads last week's ST records if today is Sunday.
 
-            let c = if time::today_is_monday() {
-                info!(
-                    "start downloading ST records (request date: >={}, repository: 11751)",
-                    &time::today_pred(6)
-                );
-                let c = download_st_records_from(c, &time::today_pred(6), "*").await?;
-                info!("finish downloading ST records");
-                c
-            } else {
-                c
-            };
+            // let c = if time::today_is_monday() {
+            //     info!(
+            //         "start downloading ST records (request date: >={}, repository: 11751)",
+            //         &time::today_pred(6)
+            //     );
+            //     let c = download_st_records_from(c, &time::today_pred(6), "*").await?;
+            //     info!("finish downloading ST records");
+            //     c
+            // } else {
+            //     c
+            // };
 
             let c = open_report_menu(c).await?;
 
