@@ -90,3 +90,70 @@ pub async fn download_st_records_from(
 
     Ok(client.enter_parent_frame().await?)
 }
+
+pub async fn download_st_records_advanced(
+    mut client: JdeClient,
+    date: &str,
+    locators: &Locators,
+) -> Result<JdeClient, fantoccini::error::CmdError> {
+    client
+        .wait_click(&locators.fav_btn)
+        .await?
+        .click_nth_favor(2)
+        .await?;
+
+    let mut client = client.enter_frame(locators.main_frame as u16).await?;
+
+    client
+        .wait_sendkeys(&locators.st_order_type_field, "*")
+        .await? // fills table fields
+        .wait_sendkeys(&locators.st_company_field, "00117")
+        .await?
+        .wait_sendkeys(&locators.st_expected_date_field, date)
+        .await?
+        .wait_click(&locators.adsearch_btn)
+        .await?
+        .delay_ms(200)
+        .await
+        .wait_click(&locators.st_repo_add_btn)
+        .await?
+        .delay_ms(500)
+        .await
+        .select_by_value(&locators.repo_select, "12", 500)
+        .await?
+        .delay_ms(500)
+        .await
+        .wait_sendkeys(&locators.repo_add_index0, "11751")
+        .await?
+        .delay_ms(500)
+        .await
+        .wait_click(&locators.aq_add_value_more)
+        .await?
+        .delay_ms(200)
+        .await
+        .wait_sendkeys(&locators.repo_add_index1, "11761")
+        .await?
+        .delay_ms(500)
+        .await
+        // start querying
+        .wait_click(&locators.query_btn)
+        .await?
+        .delay_ms(500)
+        .await
+        .wait_delay_click(&locators.grid_down_btn, 500)
+        .await?
+        .delay_ms(500)
+        .await
+        .wait_delay_click(&locators.export_data_btn, 500)
+        .await? // export data
+        .delay_ms(500)
+        .await
+        .wait_delay_click(&locators.download_btn, 500)
+        .await?
+        .wait_delay_click(&locators.close_btn, 4000)
+        .await?
+        .delay_ms(1000)
+        .await; // finish download
+
+    Ok(client.enter_parent_frame().await?)
+}

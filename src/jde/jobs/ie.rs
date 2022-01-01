@@ -43,10 +43,10 @@ pub async fn calculate_ie_report(
         .await?
         .delay_ms(1000)
         .await
-        //.sendkeys("#LITtfList", "11759\r\n")
-        //.await?
-        //.delay_ms(1000)
-        //.await
+        .sendkeys("#LITtfList", "11761\r\n")
+        .await?
+        .delay_ms(1000)
+        .await
         .wait_delay_click(&locators.select_btn, 50)
         .await?
         .wait_click(&locators.select_btn)

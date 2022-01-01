@@ -18,6 +18,7 @@ pub struct Jde {
     pub username: String,
     pub password: String,
     pub address: String,
+    pub browser_path: String,
 }
 
 pub struct Locators {
@@ -50,6 +51,12 @@ pub struct Locators {
     pub ios_month_to_field: String,
     pub ios_repo_field: String,
     pub ios_year_field: String,
+    pub adsearch_btn: String,
+    pub st_repo_add_btn: String,
+    pub repo_select: String,
+    pub repo_add_index0: String,
+    pub repo_add_index1: String,
+    pub aq_add_value_more: String,
 }
 
 /// Parses `locator` table in `config.toml`.
@@ -69,7 +76,7 @@ pub fn parse_config_locator_table(config: &Value) -> Result<Locators> {
                 .ok_or_else(|| {
                     Error::new(ErrorKind::Config(concat!("locator.", $field).to_owned()))
                 })?
-                .to_string();
+                .to_string()
         };
     }
 
@@ -81,7 +88,7 @@ pub fn parse_config_locator_table(config: &Value) -> Result<Locators> {
                 .flatten()
                 .ok_or_else(|| {
                     Error::new(ErrorKind::Config(concat!("locator.", $field).to_owned()))
-                })?;
+                })?
         };
     }
 
@@ -115,6 +122,12 @@ pub fn parse_config_locator_table(config: &Value) -> Result<Locators> {
         ios_month_to_field: field!("ios_month_to_field"),
         ios_repo_field: field!("ios_repo_field"),
         ios_year_field: field!("ios_year_field"),
+        adsearch_btn: field!("adsearch_btn"),
+        st_repo_add_btn: field!("st_repo_add_btn"),
+        repo_select: field!("repo_select"),
+        repo_add_index0: field!("repo_add_index0"),
+        repo_add_index1: field!("repo_add_index1"),
+        aq_add_value_more: field!("aq_add_value_more"),
     })
 }
 
@@ -133,7 +146,7 @@ pub fn parse_config_jde_table(config: &Value) -> Result<Jde> {
                 .map(|f| f.as_str())
                 .flatten()
                 .ok_or_else(|| Error::new(ErrorKind::Config(concat!("jde.", $field).to_owned())))?
-                .to_string();
+                .to_string()
         };
     }
 
@@ -141,5 +154,6 @@ pub fn parse_config_jde_table(config: &Value) -> Result<Jde> {
         username: field!("username"),
         password: field!("password"),
         address: field!("address"),
+        browser_path: field!("browser_path"),
     })
 }

@@ -6,6 +6,7 @@
 //! - [`jde`]: Automatically connects JDE and downloads data from JDE.
 //! - [`convert`]: Converts .xlsx to .csv and performs character set encoding and decoding.
 #![feature(seek_stream_len)]
+#![allow(deprecated)]
 
 mod error;
 mod logger;

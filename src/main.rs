@@ -4,18 +4,15 @@ extern crate clap;
 #[macro_use]
 extern crate lazy_static;
 
-// lib
 use dpt::convert::EncodeType;
 use dpt::iter::FilePathEntries;
 use dpt::Logger;
 use dpt::{Error, ErrorKind, Result};
 
-// third-party
 use admerge::{FileMerger, Newline, Skip};
 use clap::{App, ArgMatches};
 use toml::Value;
 
-// std
 use std::borrow::Cow;
 use std::env;
 use std::ffi::OsString;
@@ -73,7 +70,6 @@ lazy_static! {
 
     // User configurations.
     pub static ref CONFIG: Value = {
-        // FIXME: change inner string to "config.toml" when it's time to ship production.
         let contents = fs::read(DIR.join("config.toml"));
 
         match contents {
@@ -208,7 +204,7 @@ async fn run(matches: &ArgMatches<'_>) -> Result<()> {
         let driver_port = m.value_of("port").unwrap().parse::<u32>().unwrap();
 
         // Spawns a server thread that runs the webdriver.
-        let _driver_handle = startup_driver(driver_port)?;
+        let _driver_handle = startup_driver(driver_port, &jde.browser_path)?;
         info!("webdriver listens at port {}", driver_port);
 
         // Logins to JDE.
@@ -255,7 +251,7 @@ async fn run(matches: &ArgMatches<'_>) -> Result<()> {
             info!("finish downloading ST records");
 
             info!(
-                "start calculating IE report (request date: {}, repository: 11751)",
+                "start calculating IE report (request date: {}, repository: 11751, 11759)",
                 yestoday
             );
             let c = calculate_ie_report(c, &yestoday, &locators).await?;
@@ -292,7 +288,7 @@ async fn run(matches: &ArgMatches<'_>) -> Result<()> {
                 "start downloading ST records (request date: {}, repository: 11751)",
                 today
             );
-            let c = download_st_records(c, &today, "11751", &locators).await?;
+            let c = download_st_records_advanced(c, &today, &locators).await?;
             info!("finish downloading ST records");
 
             info!("start downloading IOS report");
@@ -300,17 +296,18 @@ async fn run(matches: &ArgMatches<'_>) -> Result<()> {
             info!("finish downloading IOS report");
 
             // Downloads last week's ST records if today is Sunday.
-            let c = if time::today_is_monday() {
-                info!(
-                    "start downloading ST records (request date: >={}, repository: 11751)",
-                    &time::today_pred(6)
-                );
-                let c = download_st_records_from(c, &time::today_pred(6), "*", &locators).await?;
-                info!("finish downloading ST records");
-                c
-            } else {
-                c
-            };
+            //
+            // let c = if time::today_is_monday() {
+            //     info!(
+            //         "start downloading ST records (request date: >={}, repository: 11751)",
+            //         &time::today_pred(6)
+            //     );
+            //     let c = download_st_records_from(c, &time::today_pred(6), "*", &locators).await?;
+            //     info!("finish downloading ST records");
+            //     c
+            // } else {
+            //     c
+            // };
 
             let c = open_report_menu(c, &locators).await?;
 

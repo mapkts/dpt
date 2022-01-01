@@ -26,11 +26,13 @@ pub const DOWNLOAD_BTN: &'static str = "#hc1";
 pub const QUERY_LIST_SELECTOR: &'static str = "#AQFormQueryList";
 pub const DATA_SELECT_BTN: &'static str = "#C0_23";
 pub const SUBMIT_BTN: &'static str = "#hc0";
+pub const ADOPTION_BTN: &'static str = "#AQDesignIcon";
 
 pub const ST_ORDER_TYPE_FIELD: &'static str = "#C0_13";
 pub const ST_COMPANY_FIELD: &'static str = "input[name='qbe0_1.9']";
 pub const ST_REPO_FIELD: &'static str = "input[name='qbe0_1.10']";
 pub const ST_EXPECTED_DATE_FIELD: &'static str = "input[name='qbe0_1.11']";
+pub const ST_REPO_ADDICON: &'static str = "#AQAddIconqbe0_1.10";
 
 pub const IOS_COMPANY_FROM_FIELD: &'static str = "#PO6T0";
 pub const IOS_COMPANY_TO_FIELD: &'static str = "#PO7T0";

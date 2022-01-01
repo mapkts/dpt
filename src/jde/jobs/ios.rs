@@ -64,7 +64,7 @@ pub async fn download_ios_report(
         .await?
         .wait_sendkeys(&locators.ios_company_field, "00117")
         .await?
-        .sendkeys(&locators.ios_repo_field, "<=11759")
+        .sendkeys(&locators.ios_repo_field, "<=11763")
         .await?
         .sendkeys(&locators.ios_century_field, century)
         .await?

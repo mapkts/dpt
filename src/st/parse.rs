@@ -100,7 +100,7 @@ pub fn parse_config_st_headers(config: &Config) -> Result<STHeader> {
                 .map(|f| f.as_str())
                 .flatten()
                 .ok_or_else(|| Error::new(ErrorKind::Config(concat!("st.", $field).to_owned())))?
-                .to_string();
+                .to_string()
         };
     }
 

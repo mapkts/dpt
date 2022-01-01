@@ -1,6 +1,7 @@
 [jde]
 password = "TANX-0312"
 username = "tanxl"
+driver_path = "C:/Uers/mapkts/AppData/Local/Mozilla Firefox/firefox.exe"
 
 address = "http://192.168.0.173:8003/jde/E1Menu.maf"
 
